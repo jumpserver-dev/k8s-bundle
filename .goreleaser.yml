@@ -58,7 +58,7 @@ nfpms:
     formats:
       - deb
     file_name_template: >-
-      {{ .PackageName }}_{{ .Version }}_amd64
+      {{ .PackageName }}_amd64
     maintainer: JumpServer Dev <support@jumpserver.org>
     description: k8s bundle with helm and kubectl.
     license: Apache 2.0
@@ -77,7 +77,7 @@ nfpms:
     formats:
       - deb
     file_name_template: >-
-      {{ .PackageName }}_{{ .Version }}_arm64
+      {{ .PackageName }}_arm64
     maintainer: JumpServer Dev <support@jumpserver.org>
     description: k8s bundle with helm and kubectl.
     license: Apache 2.0
