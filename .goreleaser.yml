@@ -1,0 +1,91 @@
+version: 2
+
+project_name: k8s-bundle
+
+before:
+  hooks:
+    - rm -rf dist/bin dist/tmp
+    - mkdir -p dist/bin dist/tmp
+    - >-
+      bash -c 'set -euo pipefail;
+      source versions.txt;
+      for arch in amd64 arm64; do
+        mkdir -p "dist/bin/linux-${arch}" "dist/tmp/kubectl-${arch}" "dist/tmp/helm-${arch}";
+        wget -O "dist/tmp/kubectl-${arch}.tar.gz" "https://dl.k8s.io/${KUBECTL_VERSION}/kubernetes-client-linux-${arch}.tar.gz";
+        tar -xf "dist/tmp/kubectl-${arch}.tar.gz" --strip-components=3 -C "dist/tmp/kubectl-${arch}" kubernetes/client/bin/kubectl;
+        install -m 0755 "dist/tmp/kubectl-${arch}/kubectl" "dist/bin/linux-${arch}/kubectl";
+        wget -O "dist/tmp/helm-${arch}.tar.gz" "https://get.helm.sh/helm-${HELM_VERSION}-linux-${arch}.tar.gz";
+        tar -xf "dist/tmp/helm-${arch}.tar.gz" --strip-components=1 -C "dist/tmp/helm-${arch}" "linux-${arch}/helm";
+        install -m 0755 "dist/tmp/helm-${arch}/helm" "dist/bin/linux-${arch}/helm";
+        if [ "${arch}" = "arm64" ]; then
+          aarch64-linux-gnu-objcopy --remove-section .go.buildinfo "dist/bin/linux-${arch}/kubectl";
+          aarch64-linux-gnu-objcopy --remove-section .go.buildinfo "dist/bin/linux-${arch}/helm";
+        else
+          objcopy --remove-section .go.buildinfo "dist/bin/linux-${arch}/kubectl";
+          objcopy --remove-section .go.buildinfo "dist/bin/linux-${arch}/helm";
+        fi;
+        rm -rf "dist/tmp/kubectl-${arch}" "dist/tmp/kubectl-${arch}.tar.gz" "dist/tmp/helm-${arch}" "dist/tmp/helm-${arch}.tar.gz";
+      done'
+
+archives:
+  - id: k8s-bundle-amd64
+    formats:
+      - tar.gz
+    name_template: >-
+      {{ .ProjectName }}-{{ .Version }}-linux-amd64
+    files:
+      - dist/bin/linux-amd64/helm
+      - dist/bin/linux-amd64/kubectl
+      - versions.txt
+  - id: k8s-bundle-arm64
+    formats:
+      - tar.gz
+    name_template: >-
+      {{ .ProjectName }}-{{ .Version }}-linux-arm64
+    files:
+      - dist/bin/linux-arm64/helm
+      - dist/bin/linux-arm64/kubectl
+      - versions.txt
+
+nfpms:
+  - id: linux-packages-amd64
+    package_name: k8s-bundle
+    formats:
+      - deb
+    file_name_template: >-
+      {{ .PackageName }}_{{ .Version }}_amd64
+    maintainer: JumpServer Dev <support@jumpserver.org>
+    description: k8s bundle with helm and kubectl.
+    license: Apache 2.0
+    homepage: https://github.com/jumpserver-dev
+    contents:
+      - src: dist/bin/linux-amd64/helm
+        dst: /usr/local/bin/helm
+      - src: dist/bin/linux-amd64/kubectl
+        dst: /usr/local/bin/kubectl
+      - src: versions.txt
+        dst: /usr/local/share/k8s-bundle/versions.txt
+
+  - id: linux-packages-arm64
+    package_name: k8s-bundle
+    formats:
+      - deb
+    file_name_template: >-
+      {{ .PackageName }}_{{ .Version }}_arm64
+    maintainer: JumpServer Dev <support@jumpserver.org>
+    description: k8s bundle with helm and kubectl.
+    license: Apache 2.0
+    homepage: https://github.com/jumpserver-dev
+    contents:
+      - src: dist/bin/linux-arm64/helm
+        dst: /usr/local/bin/helm
+      - src: dist/bin/linux-arm64/kubectl
+        dst: /usr/local/bin/kubectl
+      - src: versions.txt
+        dst: /usr/local/share/k8s-bundle/versions.txt
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  disable: true
