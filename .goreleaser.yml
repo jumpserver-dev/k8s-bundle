@@ -54,6 +54,7 @@ archives:
 nfpms:
   - id: linux-packages-amd64
     package_name: k8s-bundle
+    meta: true
     formats:
       - deb
     file_name_template: >-
@@ -72,6 +73,7 @@ nfpms:
 
   - id: linux-packages-arm64
     package_name: k8s-bundle
+    meta: true
     formats:
       - deb
     file_name_template: >-
