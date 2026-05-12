@@ -4,7 +4,7 @@ project_name: k8s-bundle
 
 before:
   hooks:
-    - rm -rf dist/bin dist/tmp
+    - rm -rf dist
     - mkdir -p dist/bin dist/tmp
     - >-
       bash -c 'set -euo pipefail;
