@@ -2,6 +2,10 @@ version: 2
 
 project_name: k8s-bundle
 
+builds:
+  - id: skip-build
+    skip: true
+
 before:
   hooks:
     - rm -rf .bundle .tmp
